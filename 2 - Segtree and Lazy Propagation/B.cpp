@@ -26,16 +26,16 @@ void build(int id, int l, int r){
 
 void update(int id, int l, int r, int x, int y, int val){
   if (lazy[id] != 0){
-    tree[id] += lazy[id];
+    tree[id] += lazy[id] * (r-l+1);
     if (l != r){
       lazy[tree[id*2]] += lazy[id];
       lazy[tree[id*2+1]] += lazy[id];
     }
     lazy[id] = 0;
   }
-  if (x >= r || y <= l) return;
+  if (x > r || y < l) return;
   if (x <= l && y >= r){
-    tree[id] += val;
+    tree[id] += val * (r - l +1);
     if(l != r){
       lazy[id*2] += val;
       lazy[id*2+1] += val;
@@ -49,9 +49,9 @@ void update(int id, int l, int r, int x, int y, int val){
 }
 
 ll query(int id, int l, int r, int x, int y){
-  if (x >= r || y <= l) return 0;
+  if (x > r || y < l) return 0;
   if (lazy[id] != 0){
-    tree[id] += lazy[id];
+    tree[id] += lazy[id] * (r -l + 1);
     if(l != r){
       lazy[id*2] += lazy[id];
       lazy[id*2+1] += lazy[id];
