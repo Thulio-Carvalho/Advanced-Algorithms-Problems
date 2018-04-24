@@ -30,37 +30,39 @@ void printTrees(){
 void build(int id, int l, int r, int p){
   if (l == r){
     if((1 << p) & arr[l]) tree[p][id] = 1;
-    cout << "ID=" << id << " / " <<  tree[p][id] << " ";
+    // cout << "ID=" << id << " / " <<  tree[p][id] << " ";
     return;
   }
   int mid = (l + r) / 2;
   build(id*2, l, mid, p);
   build(id*2+1, mid+1, r, p);
-  cout << endl;
+  // cout << endl;
   tree[p][id] = tree[p][id*2] + tree[p][id*2+1];
-  cout << "ID=" << id << " / " <<  tree[p][id] << " ";
+  // cout << "ID=" << id << " / " <<  tree[p][id] << " ";
 }
 // Builds all Segtrees
 void build(int n){
   for (int p = 0; p < NUM_BITS; p++){
-    cout << endl << endl;
+    // cout << endl << endl;
     build(1, 1, n, p);
   }
 }
 
-void doLazy(int id, int p){
-  if (lazy[p][id]){
-    lazy[p][id*2] = lazy[p][id];
-    lazy[p][id*2+1] = lazy[p][id];
+void doLazy(int id, int p, int l, int r){
+  if (l != r){
+    if (lazy[p][id]){
+      lazy[p][id*2] = lazy[p][id];
+      lazy[p][id*2+1] = lazy[p][id];
+    }
   }
 }
 // Update xors the interval
 void update(int id, int l, int r, int x, int y, int p, int val){
-  doLazy(id, p);
+  doLazy(id, p, l, r);
   if (l > y || r < x) return;
   if (l >= x && r <= y){
     lazy[p][id] = lazy[p][id] ^ val;    // Xor current lazy with value
-    doLazy(id, p);
+    doLazy(id, p, l, r);
     return;
   }
   int mid = (l + r) / 2;
@@ -75,9 +77,15 @@ void update(int n, int l, int r, int val){
 }
 
 int query(int id, int l, int r, int x, int y, int p){
-  doLazy(id, p);
+  doLazy(id, p, l, r);
   if (l > y || r < x) return 0;
-  if (l >= x && r <= y) return tree[p][id] ^ lazy[p][id];
+  if (l >= x && r <= y){
+    if(lazy[p][id] & (1 << p)){
+      return ((r-l+1) - tree[p][id]);
+    } else{
+      return tree[p][id];
+    }
+  }
   int mid = (l + r) / 2;
   return query(id*2, l, mid, x, y, p) +
          query(id*2+1, mid+1, r, x, y, p);
