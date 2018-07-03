@@ -10,17 +10,13 @@ int N, x;
 struct Node{
     int id;
     vector<Node> vizinhos;
-    Node(int id){
-        this->id = id;
-    }
-    Node(){}
 };
 
 bool isRoot(Node node){
     return node.id == 1;
 }
 
-// pair <distToRoot, NodneToRoot>
+// pair <distToRoot, NodeToRoot>
 pair<int, Node> findRoot(Node B, bitset<MAX_N> visited){
 
     vector <pair<int, Node> > distDir;
@@ -79,14 +75,16 @@ int runAway(Node B, Node backwards, bitset<MAX_N> visited){
 int main(){
     
     scanf("%d %d", &N, &x);
-    
-    Node root;
 
+    Node root;
+        if (root == NULL){
+            
+        }
     for (int i = 0; i < N-1; i++){
         int a, b;
         scanf("%d %d", &a, &b);
-        Node *node1 = new Node(a);
-        Node *node2 = new Node(b);
+        Node *node1 = new Node();
+        Node *node2 = new Node();
         node1->vizinhos.push_back(*node2);
         node2->vizinhos.push_back(*node1);
     }
