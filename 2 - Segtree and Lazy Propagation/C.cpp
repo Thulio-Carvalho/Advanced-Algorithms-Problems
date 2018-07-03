@@ -11,17 +11,17 @@ int n, m;
 
 void printTree(int p){
   cout << endl << "ARVORE P=" << p << "" << endl << endl;
-  for (int i = 8; i < 17; i++) cout << tree[p][i] << " ";
+  for (int i = 0; i < 10; i++) cout << tree[p][i] << " ";
   cout << endl << " ";
-  for (int i = 4; i < 8; i++) cout << tree[p][i] << "   ";
-  cout << endl << "    ";
-  for (int i = 2; i < 4; i++) cout << tree[p][i] << "     ";
-  cout << endl << "        ";
-  cout << tree[p][1];
+  //for (int i = 4; i < 8; i++) cout << tree[p][i] << "   ";
+  //cout << endl << "    ";
+  //for (int i = 2; i < 4; i++) cout << tree[p][i] << "     ";
+  //cout << endl << "        ";
+  //cout << tree[p][1];
 }
 
 void printTrees(){
-  for (int p = 0; p < NUM_BITS; p++){
+  for (int p = 0; p < 4; p++){
     cout << endl;
     printTree(p);
   }
@@ -49,11 +49,15 @@ void build(int n){
 }
 
 void doLazy(int id, int p, int l, int r){
-  if (l != r){
-    if (lazy[p][id]){
-      lazy[p][id*2] = lazy[p][id];
-      lazy[p][id*2+1] = lazy[p][id];
+  if (lazy[p][id]){
+    if (lazy[p][id] & (1 << p)){
+      tree[p][id] = ((r-l+1) - tree[p][id]);
     }
+    if (l != r){
+        lazy[p][id*2] = lazy[p][id] ^ lazy[p][id*2];
+        lazy[p][id*2+1] = lazy[p][id] ^ lazy[p][id*2+1];
+    }
+    lazy[p][id] = 0;
   }
 }
 // Update xors the interval
@@ -68,11 +72,12 @@ void update(int id, int l, int r, int x, int y, int p, int val){
   int mid = (l + r) / 2;
   update(id*2, l, mid, x, y, p, val);
   update(id*2, mid+1, r, x, y, p, val);
+  tree[p][id] = tree[p][id*2] + tree[p][id*2+1];
 }
 
 void update(int n, int l, int r, int val){
   for (int p = 0; p < NUM_BITS; p++){
-    update(1, 1, n, l, r, p, val);
+    if((1 << p) & val)update(1, 1, n, l, r, p, val);
   }
 }
 
@@ -80,11 +85,12 @@ int query(int id, int l, int r, int x, int y, int p){
   doLazy(id, p, l, r);
   if (l > y || r < x) return 0;
   if (l >= x && r <= y){
-    if(lazy[p][id] & (1 << p)){
-      return ((r-l+1) - tree[p][id]);
-    } else{
-      return tree[p][id];
-    }
+    return tree[p][id];
+    // if(lazy[p][id] & (1 << p)){
+    //   return ((r-l+1) - tree[p][id]);
+    // } else{
+    //   return tree[p][id];
+    // }
   }
   int mid = (l + r) / 2;
   return query(id*2, l, mid, x, y, p) +
@@ -103,6 +109,7 @@ int main(){
   scanf("%d", &n);
   for (int i = 1; i <= n; i++) scanf("%d", &arr[i]);
   build(n);
+
   // printTrees();
   scanf("%d", &m);
   for (int i = 0; i < m; i++){
@@ -113,6 +120,8 @@ int main(){
     } else{
       scanf("%d", &val);
       update(n, l, r, val);
+      // cout << endl;
+      // printTrees();
     }
     // printTrees();
   }
