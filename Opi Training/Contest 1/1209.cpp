@@ -5,7 +5,6 @@ using namespace std;
 
 typedef vector<int> vi;
 
-
 bitset<MAXN> matrix[MAXN];
 
 int friendsCounter[MAXN];
@@ -14,49 +13,43 @@ bitset<MAXN> vis;
 
 int N, M, K;
 
-void unfriendNexts(int node){
-    queue <int> Q;
+void unfriendNexts(int node) {
+    queue<int> Q;
     Q.push(node);
 
-    while (!Q.empty()){
+    while (!Q.empty()) {
         int actual = Q.front();
         Q.pop();
 
-        for (int i = 1; i <= N; i++){
-
-            if (matrix[actual][i]){
-
+        for (int i = 1; i <= N; i++) {
+            if (matrix[actual][i]) {
                 matrix[actual][i] = 0;
                 matrix[i][actual] = 0;
 
                 friendsCounter[i]--;
 
-                if (friendsCounter[i] == K-1){
+                if (friendsCounter[i] == K - 1) {
                     Q.push(i);
                 }
             }
         }
     }
 }
-void resetMatrix(){
-    for (int i = 1; i <= N; i++){
-
+void resetMatrix() {
+    for (int i = 1; i <= N; i++) {
         friendsCounter[i] = 0;
-        
-        for (int j = 1; j <= N; j++){
+
+        for (int j = 1; j <= N; j++) {
             matrix[i][j] = 0;
         }
     }
 }
-int main(){
-
-    while (scanf("%d %d %d", &N, &M, &K) != EOF){
-
+int main() {
+    while (scanf("%d %d %d", &N, &M, &K) != EOF) {
         resetMatrix();
-        
 
         // reading
-        for (int i = 0; i < M; i++){
+        for (int i = 0; i < M; i++) {
             int a, b;
             scanf("%d %d", &a, &b);
             matrix[a][b] = 1;
@@ -72,24 +65,22 @@ int main(){
         //     } cout << endl;
         // }
 
-        for (int i = 1; i <= N; i++){
-            if (friendsCounter[i] < K){
+        for (int i = 1; i <= N; i++) {
+            if (friendsCounter[i] < K) {
                 unfriendNexts(i);
             }
         }
+        vector<int> party;
 
-
-        vector <int> party;
-
-        for (int i = 1; i <= N; i++){
-            if (friendsCounter[i] >= K){
+        for (int i = 1; i <= N; i++) {
+            if (friendsCounter[i] >= K) {
                 party.push_back(i);
             }
         }
-        
-        if (party.size() >  0){
-            for (int i = 0; i < party.size(); i++){
-                if (i < party.size() - 1){
+
+        if (party.size() > 0) {
+            for (int i = 0; i < party.size(); i++) {
+                if (i < party.size() - 1) {
                     printf("%d ", party[i]);
                 } else {
                     printf("%d\n", party[i]);
