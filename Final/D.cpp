@@ -1,47 +1,68 @@
 #include <bits/stdc++.h>
-#define MAXN 100010
+#define MAXN 300021
 
 using namespace std;
+typedef long long ll;
 
-int N, arr[MAXN];
+int N;
+ll arr[MAXN];
+ll A, B, C;
+map<ll, ll> freq;
 
+void computeMinValues() {
+  ll sorted[N];
+
+  copy(arr, arr + N, sorted);
+  sort(sorted, sorted + N);
+
+  A = sorted[0];
+  B = sorted[1];
+  C = sorted[2];
+}
+
+ll solve() {
+
+  if (A != B && B != C)
+    return freq[C];
+
+  else if (A == B && B != C)
+    return freq[C];
+
+  else if (A != B && B == C) {
+    ll total = 0;
+    for (ll i = 1; i < freq[B]; i++) { total += i; }
+    return total;
+  }
+  
+  // 1 1 1 1 
+
+  else if (A == B && B == C) { 
+    ll F = freq[A];
+    ll total = 1;   
+    ll secondChoice =  F - 2;
+    for (ll i = F; i > 3; i--) {
+      total += (secondChoice * (secondChoice + 1)) / 2;
+      secondChoice--;
+    } 
+
+    return total;
+  }
+
+  return 0;
+}
 int main() {
   scanf("%d", &N);
 
   for (int i = 0; i < N; i++) {
-    scanf("%d", &arr[i]);
+    scanf("%lld", &arr[i]);
+    freq[arr[i]]++;
   }
 
-  int a, b, c;
-  a = arr[0];
-  b = arr[1];
-  c = arr[2];
+  computeMinValues();
 
-  for (int num : arr) { 
-    if (num < a) { 
-      a = num; 
-    } else if (num < b) { 
-      b = num;
-    } else if (num < c) {
-      c = num;
-    }
-  }
+  ll ans = solve();
 
-  map<int, vector<int>> indexes;
-
-  for (int i = 0; i < N; i++) {
-    int actual = arr[i];
-
-    if (actual == a) { 
-      indexes[a].push_back(i);
-    } else if (actual == b){
-      indexes[b].push_back(i);
-    } else if (actual == c){
-      indexes[c].push_back(i);
-    }
-  }
-
-  
+  printf("%lld\n", ans);
 
   return 0;
 }
