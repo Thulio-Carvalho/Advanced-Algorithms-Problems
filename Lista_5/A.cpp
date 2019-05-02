@@ -5,33 +5,48 @@
 
 #include <bits/stdc++.h>
 #define MAXN 400010
+#define MAXC 64
 #define ROOT 1
 
 using namespace std;
 
-int N, M, arr[MAXN];
-vector <int> adjList[MAXN];
-bitset <MAXN> visited;
-vector <int> tour;
+typedef long long ll;
+typedef pair <int, int> ii;
 
 struct Node {
-    int color;
-    int value;
+    ll color;
+    ll colors; 
 
-    Node merge_values(Node a, Node b) {
-        int maxValue = max(a.value, b.value);
-        if (color) {
-            
-        } // Stopped here
+    Node() {
+        colors = (1LL << 1); 
+    }
+
+    void change_color(int color) {
+        colors = colors | (1LL << color);
+    }
+
+    void merge(Node a, Node b) {
+        colors = a.colors | b.colors | colors;
+    }
+    
+    int diff_count() {
+        return __builtin_popcount(colors);
     }
 };
-
-Node segTree[4 * MAXN];
 
 enum Type {
     QUERY,
     UPDATE
 };
+
+int N, M, arr[MAXN];
+vector <int> adjList[MAXN];
+bitset <MAXN> visited;
+vector <int> tour;
+ii tourPos[MAXN];
+Node segTree[4 * MAXN];
+int lazy[4 * MAXN];
+
 
 Type read_query(){
     int num;
@@ -44,26 +59,85 @@ Type read_query(){
 
 void euler_tour(int node){
     tour.push_back(node);
+    tourPos[node].first = tour.size() - 1; 
     visited.set(node);
+
     for (int child : adjList[node]) {
         if (!visited[child]) {
             euler_tour(child);
         }
-    } tour.push_back(node);
+    } 
+
+    tour.push_back(node);
+    tourPos[node].second = tour.size() - 1; 
 }
 
 void build(int id, int l, int r){
     if (l == r) {
-        segTree[id].color = tour[l];
-        segTree[id].value = 1;
+        segTree[id].change_color(tour[l]);
     } else {
         int mid = (l + r) / 2;
         build(id * 2, l, mid);
         build(id * 2 + 1, mid + 1, r);
 
-        segTree[id].color = tour[l];
-        segTree[id].merge_values(segTree[id * 2], segTree[id * 2 + 1]);
+        segTree[id].change_color(tour[l]);
+        segTree[id].merge(segTree[id * 2], segTree[id * 2 + 1]);
     }
+}
+
+void propagate(int id, int l, int r){
+    if (lazy[id] != 0) {
+        if (l != r) {
+            lazy[id * 2] = lazy[id];
+            lazy[id * 2 + 1] = lazy[id];
+        }
+
+        segTree[id].change_color(lazy[id]);
+        lazy[id] = 0;
+    }
+}
+
+void update(int id, int l, int r, int x, int y, int value){
+    if (x > r || y < l) return;
+
+    if (x <= l && r <= y) {
+        lazy[id] = value;
+        propagate(id, l, r);
+        return; 
+    }
+
+    propagate(id, l, r);
+
+    int mid = (l + r) / 2;
+    update(id * 2, l, mid, x, y, value);
+    update(id * 2 + 1, mid + 1, r, x, y, value);
+}
+
+int query(int id, int l, int r, int x, int y) {
+    if (x <= l && r <= y) {
+        propagate(id, l, r);
+        return segTree[id].colors;                  // code repeat, care
+    }
+    if (x > r || y < l) {
+        return 0LL;
+    }
+    propagate(id, l, r);
+    int mid = (l + r) / 2;
+    return query(id * 2, l, mid, x, y) | query(id * 2 + 1, mid + 1, r, x, y);
+}
+
+int query(int vertex) {
+    ii pos = tourPos[vertex];
+    return __builtin_popcount(query(0, 0, N - 1, pos.first, pos.second));
+}
+
+void update(int vertex, int color){
+    ii pos = tourPos[vertex]; 
+    update(0, 0, N-  1, pos.first, pos.second, color);
+}
+
+void build() {
+    build(0, 0, N - 1);
 }
 
 int main(){
@@ -81,19 +155,21 @@ int main(){
     }
     
     euler_tour(ROOT);
+    build();
 
     while (M--) {
-        Type query = read_query();
-        int v, c;
-        switch (query){
+        Type queryType = read_query();
+        int v, c, ans;
+        switch (queryType){
             case Type::QUERY:
             scanf("%d", &v);
-            // TODO query v vertex
+            ans = query(v);
+            printf("%d\n", ans);
             break;
 
             case Type::UPDATE:
             scanf("%d %d", &v, &c);
-            // TODO update v vertex
+            update(v, c);
             break;
 
             default:
